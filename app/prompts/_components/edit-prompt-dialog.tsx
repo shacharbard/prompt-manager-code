@@ -59,7 +59,7 @@ export function EditPromptDialog({ prompt, open, onOpenChange, onEditPrompt }: E
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit Prompt</DialogTitle>
-            <DialogDescription>Make changes to your prompt here. Click save when you&apos;re done.</DialogDescription>
+            <DialogDescription>Make changes to your prompt here. Click save when you are done.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
