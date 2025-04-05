@@ -49,15 +49,27 @@ export async function createPrompt(data: { name: string; description: string; co
 /**
  * UPDATE: Updates an existing prompt by its ID.
  */
-export async function updatePrompt({ id, name, description, content }: { id: number; name: string; description: string; content: string }) {
+export async function updatePrompt(
+  id: number,
+  data: {
+    name: string;
+    description: string;
+    content: string;
+  }
+) {
   try {
     await devDelay();
     console.log(`Server Action: Updating prompt ${id}...`);
     // Update the prompt matching the ID and return the updated record
     const [updatedPrompt] = await db
       .update(prompts)
-      .set({ name, description, content, updated_at: new Date() }) // Also update updated_at
-      .where(eq(prompts.id, id)) // Use eq() for equality check
+      .set({
+        name: data.name,
+        description: data.description,
+        content: data.content,
+        updated_at: new Date()
+      })
+      .where(eq(prompts.id, id))
       .returning();
 
     if (!updatedPrompt) {

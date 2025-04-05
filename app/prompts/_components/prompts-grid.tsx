@@ -1,13 +1,14 @@
 // app/prompts/components/prompts-grid.tsx
 "use client"; // Mark as Client Component for state and interaction
 
-import { createPrompt } from "@/actions/prompts-actions";
+import { createPrompt, updatePrompt } from "@/actions/prompts-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card"; // Import Shadcn Card
 import { motion } from "framer-motion";
 import { Copy, Edit2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CreatePromptDialog } from "./create-prompt-dialog";
+import { EditPromptDialog } from "./edit-prompt-dialog";
 
 // Define the expected structure for a prompt object
 interface Prompt {
@@ -26,10 +27,16 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
   // Initialize state with the real data passed from server component
   const [prompts, setPrompts] = useState<Prompt[]>(initialPrompts);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
 
   const handleCreatePrompt = async (data: { name: string; description: string; content: string }) => {
     const newPrompt = await createPrompt(data);
     setPrompts((prev) => [...prev, newPrompt]);
+  };
+
+  const handleEditPrompt = async (id: number, data: { name: string; description: string; content: string }) => {
+    const updatedPrompt = await updatePrompt(id, data);
+    setPrompts((prev) => prev.map((prompt) => (prompt.id === id ? updatedPrompt : prompt)));
   };
 
   // Display message and create button if no prompts exist
@@ -70,6 +77,15 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
         onCreatePrompt={handleCreatePrompt}
       />
 
+      {editingPrompt && (
+        <EditPromptDialog
+          prompt={editingPrompt}
+          open={true}
+          onOpenChange={(open) => !open && setEditingPrompt(null)}
+          onEditPrompt={handleEditPrompt}
+        />
+      )}
+
       {/* Responsive Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Map over the prompts state array */}
@@ -81,7 +97,7 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
             transition={{ duration: 0.5, delay: index * 0.05 }}
           >
             {/* Shadcn Card */}
-            <Card className="h-full flex flex-col bg-white dark:bg-gray-800/50 shadow-sm border border-gray-200 dark:border-gray-700/50">
+            <Card className="group h-full flex flex-col bg-white dark:bg-gray-800/50 shadow-sm border border-gray-200 dark:border-gray-700/50 hover:shadow-md transition-shadow duration-200">
               <CardContent className="pt-6 flex-grow flex flex-col">
                 <div className="flex justify-between items-start mb-4 gap-2">
                   {/* Title & Description */}
@@ -102,13 +118,13 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
                     </p>
                   </div>
                   {/* Action Buttons */}
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-7 w-7 hover:bg-gray-100 dark:hover:bg-gray-700"
                       title="Edit"
-                      onClick={() => console.log("Edit", prompt.id)}
+                      onClick={() => setEditingPrompt(prompt)}
                     >
                       {" "}
                       <Edit2 className="w-4 h-4" />{" "}
@@ -116,7 +132,7 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-7 w-7 hover:bg-gray-100 dark:hover:bg-gray-700"
                       title="Delete"
                       onClick={() => console.log("Delete", prompt.id)}
                     >
@@ -126,7 +142,7 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-7 w-7 hover:bg-gray-100 dark:hover:bg-gray-700"
                       title="Copy"
                       onClick={() => console.log("Copy", prompt.id)}
                     >
