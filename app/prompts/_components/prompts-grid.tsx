@@ -31,7 +31,6 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [deletingPrompt, setDeletingPrompt] = useState<Prompt | null>(null);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const handleCreatePrompt = async (data: { name: string; description: string; content: string }) => {
     const newPrompt = await createPrompt(data);
