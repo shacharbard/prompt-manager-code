@@ -25,12 +25,19 @@ export async function getPrompts() {
 /**
  * CREATE: Creates a new prompt.
  */
-export async function createPrompt({ name, description, content }: { name: string; description: string; content: string }) {
+export async function createPrompt(data: { name: string; description: string; content: string }) {
   try {
     await devDelay();
     console.log("Server Action: Creating prompt...");
     // Insert the new prompt and return the inserted record
-    const [newPrompt] = await db.insert(prompts).values({ name, description, content }).returning();
+    const [newPrompt] = await db
+      .insert(prompts)
+      .values({
+        name: data.name,
+        description: data.description,
+        content: data.content
+      })
+      .returning();
     console.log("Server Action: Prompt created:", newPrompt);
     return newPrompt;
   } catch (error) {

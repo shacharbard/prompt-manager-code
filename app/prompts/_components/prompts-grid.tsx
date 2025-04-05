@@ -1,11 +1,13 @@
 // app/prompts/components/prompts-grid.tsx
 "use client"; // Mark as Client Component for state and interaction
 
+import { createPrompt } from "@/actions/prompts-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card"; // Import Shadcn Card
 import { motion } from "framer-motion";
 import { Copy, Edit2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { CreatePromptDialog } from "./create-prompt-dialog";
 
 // Define the expected structure for a prompt object
 interface Prompt {
@@ -23,22 +25,29 @@ interface PromptsGridProps {
 export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
   // Initialize state with the real data passed from server component
   const [prompts, setPrompts] = useState<Prompt[]>(initialPrompts);
-  // Placeholder state for copy confirmation (implement later)
-  // const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const handleCreatePrompt = async (data: { name: string; description: string; content: string }) => {
+    const newPrompt = await createPrompt(data);
+    setPrompts((prev) => [...prev, newPrompt]);
+  };
 
   // Display message and create button if no prompts exist
   if (prompts.length === 0) {
     return (
       <div className="text-center py-12">
         <Button
-          onClick={() => {
-            /* Add create logic */
-          }}
+          onClick={() => setIsCreateDialogOpen(true)}
           className="mb-6 gap-2"
         >
           <Plus className="w-5 h-5" /> Create First Prompt
         </Button>
         <p className="text-gray-600 dark:text-gray-300">No prompts found. Get started by creating one!</p>
+        <CreatePromptDialog
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          onCreatePrompt={handleCreatePrompt}
+        />
       </div>
     );
   }
@@ -48,14 +57,18 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
       {/* Button to trigger creating a new prompt */}
       <div className="mb-6 flex justify-end">
         <Button
-          onClick={() => {
-            /* Add create logic */
-          }}
+          onClick={() => setIsCreateDialogOpen(true)}
           className="gap-2"
         >
           <Plus className="w-5 h-5" /> Create Prompt
         </Button>
       </div>
+
+      <CreatePromptDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onCreatePrompt={handleCreatePrompt}
+      />
 
       {/* Responsive Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
