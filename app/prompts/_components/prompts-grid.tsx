@@ -1,13 +1,15 @@
 // app/prompts/components/prompts-grid.tsx
 "use client"; // Mark as Client Component for state and interaction
 
-import { createPrompt, updatePrompt } from "@/actions/prompts-actions";
+import { createPrompt, deletePrompt, updatePrompt } from "@/actions/prompts-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card"; // Import Shadcn Card
 import { motion } from "framer-motion";
-import { Copy, Edit2, Plus, Trash2 } from "lucide-react";
+import { Edit2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { CopyButton } from "./copy-button";
 import { CreatePromptDialog } from "./create-prompt-dialog";
+import { DeletePromptDialog } from "./delete-prompt-dialog";
 import { EditPromptDialog } from "./edit-prompt-dialog";
 
 // Define the expected structure for a prompt object
@@ -28,6 +30,8 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
   const [prompts, setPrompts] = useState<Prompt[]>(initialPrompts);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  const [deletingPrompt, setDeletingPrompt] = useState<Prompt | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const handleCreatePrompt = async (data: { name: string; description: string; content: string }) => {
     const newPrompt = await createPrompt(data);
@@ -37,6 +41,25 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
   const handleEditPrompt = async (id: number, data: { name: string; description: string; content: string }) => {
     const updatedPrompt = await updatePrompt(id, data);
     setPrompts((prev) => prev.map((prompt) => (prompt.id === id ? updatedPrompt : prompt)));
+  };
+
+  const handleDeletePrompt = async () => {
+    if (!deletingPrompt) return;
+    await deletePrompt(deletingPrompt.id);
+    setPrompts((prev) => prev.filter((prompt) => prompt.id !== deletingPrompt.id));
+  };
+
+  const handleCopy = async (prompt: Prompt) => {
+    try {
+      await navigator.clipboard.writeText(prompt.content);
+      setCopiedId(prompt.id);
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
   };
 
   // Display message and create button if no prompts exist
@@ -86,6 +109,15 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
         />
       )}
 
+      {deletingPrompt && (
+        <DeletePromptDialog
+          promptName={deletingPrompt.name}
+          open={true}
+          onOpenChange={(open) => !open && setDeletingPrompt(null)}
+          onDeletePrompt={handleDeletePrompt}
+        />
+      )}
+
       {/* Responsive Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Map over the prompts state array */}
@@ -132,23 +164,14 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="h-7 w-7 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400"
                       title="Delete"
-                      onClick={() => console.log("Delete", prompt.id)}
+                      onClick={() => setDeletingPrompt(prompt)}
                     >
                       {" "}
                       <Trash2 className="w-4 h-4" />{" "}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title="Copy"
-                      onClick={() => console.log("Copy", prompt.id)}
-                    >
-                      {" "}
-                      <Copy className="w-4 h-4" />{" "}
-                    </Button>
+                    <CopyButton text={prompt.content} />
                   </div>
                 </div>
                 {/* Prompt Content */}
