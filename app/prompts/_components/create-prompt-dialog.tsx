@@ -48,7 +48,7 @@ export function CreatePromptDialog({ open, onOpenChange, onCreatePrompt }: Creat
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Prompt</DialogTitle>
-            <DialogDescription>Fill in the details for your new prompt. Click save when you're done.</DialogDescription>
+            <DialogDescription>Fill in the details for your new prompt. Click save when you&apos;re done.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

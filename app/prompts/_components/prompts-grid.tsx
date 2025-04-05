@@ -31,7 +31,6 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [deletingPrompt, setDeletingPrompt] = useState<Prompt | null>(null);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const handleCreatePrompt = async (data: { name: string; description: string; content: string }) => {
     const newPrompt = await createPrompt(data);
@@ -47,19 +46,6 @@ export const PromptsGrid = ({ initialPrompts }: PromptsGridProps) => {
     if (!deletingPrompt) return;
     await deletePrompt(deletingPrompt.id);
     setPrompts((prev) => prev.filter((prompt) => prompt.id !== deletingPrompt.id));
-  };
-
-  const handleCopy = async (prompt: Prompt) => {
-    try {
-      await navigator.clipboard.writeText(prompt.content);
-      setCopiedId(prompt.id);
-      // Reset the copied state after 2 seconds
-      setTimeout(() => {
-        setCopiedId(null);
-      }, 2000);
-    } catch (err) {
-      console.error("Failed to copy text:", err);
-    }
   };
 
   // Display message and create button if no prompts exist
